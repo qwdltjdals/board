@@ -1,0 +1,218 @@
+/** @jsxImportSource @emotion/react */
+
+import { css } from "@emotion/react";
+import { useCallback, useMemo, useRef, useState } from "react";
+import ReactQuill, { Quill } from "react-quill";
+import 'react-quill/dist/quill.snow.css';
+import ImageResize from "quill-image-resize";
+import { Parchment } from "quill";
+import Container from "quill/blots/container";
+import { getDownloadURL, ref, uploadBytesResumable } from "firebase/storage";
+import { storage } from "../../../firebase/firebase";
+import { v4 as uuid } from 'uuid';
+import { RingLoader } from "react-spinners";
+import { useNavigate } from "react-router-dom";
+import { addWriteApi } from "../../../apis/boardApi";
+import { instance } from "../../../apis/util/instance";
+
+
+Quill.register("modules/imageResize", ImageResize);
+
+
+const layout = css`
+    box-sizing: border-box;
+    padding-top: 30px;
+    margin: 0 auto;
+    width: 1100px;
+`;
+
+const header = css`
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    margin: 10px 0px;
+
+    & > h1 {
+        margin: 0;
+    }
+
+    & > button {
+        box-sizing: border-box;
+        border: 1px solid #c0c0c0;
+        padding: 6px 15px;
+        background-color: white;
+        font-size: 12px;
+        color: #333333;
+        font-weight: 600;
+        cursor: pointer;
+        &:hover {
+            background-color: #fafafa;
+        }
+        &:active {
+            background-color: #eeeeee;
+        }
+    }
+`;
+
+const titleInput = css`
+    box-sizing: border-box;
+    margin-bottom: 10px;
+    border: 1px solid #c0c0c0;
+    outline: none;
+    padding: 12px 15px;
+    width: 100%;
+    font-size: 16px;
+`;
+
+const editerLayout = css`
+    box-sizing: border-box;
+    margin-bottom: 42px; // 위에 박스 만큼 밀어내고 있어서 이것도 밀어내줘야함
+    width: 100%;
+    height: 700px;
+
+`;
+
+const loadingLayout = css`
+    position: absolute;
+    left: 0;
+    top: 0;
+    z-index: 99;
+    box-sizing: border-box;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    height: 100%;
+    background-color: #00000066;
+`;
+
+function WritePage(props) {
+    const navigate = useNavigate();
+    const [board, setBoard] = useState({
+        title: "",
+        content: "",
+    })
+
+    const quillRef = useRef(null);
+    const [isUploading, setUploading] = useState(false);
+
+    const handleWriteSubmitOnClick = async() => {
+        // const response = await addWriteApi(board);
+        instance.post("/board", board)
+        .then((response) => {
+
+        }).catch((error) => {
+            const fieldErrors = error.response.data;
+            for(let fieldError of fieldErrors) {
+                if(fieldError.field === "title") {
+                    alert(fieldError.defaultMessage);
+                    return; // alert창 두개 이상 뜨는거 방지
+                }
+            }
+            for(let fieldError of fieldErrors) {
+                if(fieldError.field === "content") {
+                    alert(fieldError.defaultMessage);
+                    break;
+                }
+            }
+        });
+        
+    }
+
+    const handletitleInputOnchange = (e) => {
+        setBoard(board => ({
+            ...board,
+            [e.target.name] : e.target.value
+        }));
+    }
+
+    const handleQuillValueOnChange = (value) => {
+        setBoard(board => ({
+            ...board,
+            content : quillRef.current.getEditor().getText().trim() === "" ? "" : value,
+        }));
+    }
+
+    const handleImageLoad = useCallback((e) => { // 랜더링 될때 다시 재정의 하지 않을때 쓰는거
+        const input = document.createElement("input");
+        input.setAttribute("type", "file");
+        input.click();
+
+        input.onchange = () => {
+            const editor = quillRef.current.getEditor();
+            const files = Array.from(input.files); // 이미지 불러옴
+            const imgFile = files[0];
+
+            const editPoint = editor.getSelection(true);
+
+            const storageRef = ref(storage, `board/img/${uuid()}_${imgFile.name}`)
+            const task = uploadBytesResumable(storageRef, imgFile);
+            setUploading(true)
+            task.on(
+                "state_changed",
+                () => { },
+                () => { },
+                async () => {
+                    const url = await getDownloadURL(storageRef);
+                    editor.insertEmbed(editPoint.index, "image", url) // 현재 커서 위치에 이미지 추가해라 - url로
+                    editor.setSelection(editPoint.index + 1); // 현재 커서 위치 다음으로 커서를 위치시켜라
+                    editor.insertText(editPoint.index + 1, "\n");
+                    setUploading(false)
+                }
+            )
+
+        }
+    }, []);
+
+    const toolbarOptions = useMemo(() => [
+        [{ 'header': [1, 2, 3, 4, 5, 6, false] }],
+        [{ 'font': [] }],
+        ['bold', 'italic', 'underline', 'strike'],        // toggled buttons
+        [{ 'color': [] }, { 'background': [] }, { 'align': [] }],          // dropdown with defaults from theme
+        [{ 'list': 'ordered' }, { 'list': 'bullet' }, { 'list': 'check' }],
+        [{ 'indent': '-1' }, { 'indent': '+1' }],          // outdent/indent
+        ['link', 'image', 'video', 'formula'],
+        ['blockquote', 'code-block'],
+    ], []);
+
+
+    return (
+        <div css={layout}>
+            <header css={header}>
+                <h1>Quill Edit</h1>
+                <button onClick={handleWriteSubmitOnClick}>작성하기</button>
+            </header>
+            <input css={titleInput} type="text" name="title" onChange={handletitleInputOnchange} value={board.title} placeholder="게시글의 제목을 입력하세요"/>
+            <div css={editerLayout}>
+                {
+                    isUploading &&
+                    <div css={loadingLayout}>
+                    <RingLoader />
+                </div>
+                }
+                <ReactQuill
+                    ref={quillRef}
+                    style={{
+                        boxSizing: "border-box",
+                        width: "100%",
+                        height: "100%"
+                    }}
+                    onChange={handleQuillValueOnChange}
+                    modules={{
+                        toolbar: {
+                            container: toolbarOptions,
+                            handlers: {
+                                image: handleImageLoad,
+                            }
+                        },
+                        imageResize: {
+                            Parchment: Quill.import("parchment")
+                        },
+
+                    }}
+                />
+            </div>
+        </div>
+    );
+}
+export default WritePage;
