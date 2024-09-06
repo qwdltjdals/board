@@ -96,40 +96,70 @@ function WritePage(props) {
     const quillRef = useRef(null);
     const [isUploading, setUploading] = useState(false);
 
-    const handleWriteSubmitOnClick = async() => {
-        // const response = await addWriteApi(board);
-        instance.post("/board", board)
-        .then((response) => {
-
-        }).catch((error) => {
+    const handleWriteSubmitOnClick = async () => {
+        try {
+            
+            const response = await instance.post("/board", board) // await이 있어야 resolve데이터가 response에 담김
+            alert("작성이 완료되었습니다.")
+            navigate(`/board/detail/${response.data.boardId}`) // 컨트롤러에서 응답받은 키값   
+            console.log(response.data.boardId) 
+        } catch (error) { // await에서 뜬 error 받아옴
             const fieldErrors = error.response.data;
-            for(let fieldError of fieldErrors) {
-                if(fieldError.field === "title") {
+
+            for (let fieldError of fieldErrors) {
+                if (fieldError.field === "title") {
                     alert(fieldError.defaultMessage);
                     return; // alert창 두개 이상 뜨는거 방지
                 }
             }
-            for(let fieldError of fieldErrors) {
-                if(fieldError.field === "content") {
+            for (let fieldError of fieldErrors) {
+                if (fieldError.field === "content") {
                     alert(fieldError.defaultMessage);
-                    break;
+                    return;
                 }
             }
-        });
-        
+
+        }
     }
+
+    // const handleWriteSubmitOnClick2 = async () => {
+    //     // const response = await addWriteApi(board);
+    //     let response = null
+    //     try {
+    //         response = await instance.post("/board", board)
+    //         alert("작성이 완료되었습니다.")
+    //         navigate(`/board/detail/${response.data.boardId}`) // 컨트롤러에서 응답받은 키값
+    //     } catch (error) {
+    //         const fieldErrors = error.response.data;
+
+    //         for (let fieldError of fieldErrors) {
+    //             if (fieldError.field === "title") {
+    //                 alert(fieldError.defaultMessage);
+    //                 return; // alert창 두개 이상 뜨는거 방지
+    //             }
+    //         }
+    //         for (let fieldError of fieldErrors) {
+    //             if (fieldError.field === "content") {
+    //                 alert(fieldError.defaultMessage);
+    //                 return;
+    //             }
+    //         }
+    //     }
+    //     // .then((response) => {
+    //     //     // response.data = 응답 객체
+    // };
 
     const handletitleInputOnchange = (e) => {
         setBoard(board => ({
             ...board,
-            [e.target.name] : e.target.value
+            [e.target.name]: e.target.value
         }));
     }
 
     const handleQuillValueOnChange = (value) => {
         setBoard(board => ({
             ...board,
-            content : quillRef.current.getEditor().getText().trim() === "" ? "" : value,
+            content: quillRef.current.getEditor().getText().trim() === "" ? "" : value,
         }));
     }
 
@@ -182,13 +212,13 @@ function WritePage(props) {
                 <h1>Quill Edit</h1>
                 <button onClick={handleWriteSubmitOnClick}>작성하기</button>
             </header>
-            <input css={titleInput} type="text" name="title" onChange={handletitleInputOnchange} value={board.title} placeholder="게시글의 제목을 입력하세요"/>
+            <input css={titleInput} type="text" name="title" onChange={handletitleInputOnchange} value={board.title} placeholder="게시글의 제목을 입력하세요" />
             <div css={editerLayout}>
                 {
                     isUploading &&
                     <div css={loadingLayout}>
-                    <RingLoader />
-                </div>
+                        <RingLoader />
+                    </div>
                 }
                 <ReactQuill
                     ref={quillRef}

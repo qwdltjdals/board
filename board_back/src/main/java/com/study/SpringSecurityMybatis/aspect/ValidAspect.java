@@ -45,9 +45,6 @@ public class ValidAspect {
             case "oAuth2Signup":
                 validOAuth2JoinDto(args, bindingResult);
                 break;
-            case "write":
-                validWrite(args, bindingResult);
-                break;
         }
 
         if(bindingResult.hasErrors()) {

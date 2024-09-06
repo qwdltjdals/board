@@ -7,6 +7,7 @@ import com.study.SpringSecurityMybatis.service.OAuth2Service;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
@@ -50,10 +51,19 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
         http.exceptionHandling().authenticationEntryPoint(authenticationHandler); // eAuthentication오류가 터지면 ㅁ원래 403오류가 나는데 이제 이리로 갈거임
         http.authorizeRequests()
-                .antMatchers("/auth/**", "/h2-console/**")
+                .antMatchers(
+                        "/auth/**",
+                        "/h2-console/**"
+                )
+                .permitAll()
+                .antMatchers(
+                        HttpMethod.GET, // 겟요청인 보드요청 - 로그인 안해도 조회는 가능
+                        "/board/**"
+                )
                 .permitAll()
                 .anyRequest()
                 .authenticated();
+
         http.addFilterBefore(jwtAccessTokenFilter, UsernamePasswordAuthenticationFilter.class); // 이 필터를, 얘 앞에 잡아주겠다
     }
 }
