@@ -24,7 +24,7 @@ public class BoardController {
     @ValidAop
     @PostMapping("/board")
     public ResponseEntity<?> write(@Valid @RequestBody ReqWriteBoardDto dto, BindingResult bindingResult) {
-        return ResponseEntity.ok().body(Map.of("boardId", boardService.writeBoard(dto)));
+        return ResponseEntity.ok().body(Map.of("boardId", boardService.writeBoard(dto))); // boardId를 프론트에 넘겨주는거
     }
 
     @GetMapping("/board/{boardId}")

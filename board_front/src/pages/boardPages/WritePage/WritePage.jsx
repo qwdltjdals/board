@@ -188,6 +188,10 @@ function WritePage(props) {
                     editor.setSelection(editPoint.index + 1); // 현재 커서 위치 다음으로 커서를 위치시켜라
                     editor.insertText(editPoint.index + 1, "\n");
                     setUploading(false)
+                    setBoard(board => ({ // 이미지만 넣고(글 안넣고) 작성버튼 눌러도 되게하는거
+                        ...board,
+                        content: editor.root.innerHTML,
+                    }));
                 }
             )
 
