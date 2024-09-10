@@ -31,6 +31,13 @@
         where
             id = #{id}
     </update>
+    <delete id="deleteBoardById">
+        delete
+        from
+            board
+        where
+            id = #{id}
+    </delete>
 
     <select id="findById" resultMap="boardResultMap">
         select

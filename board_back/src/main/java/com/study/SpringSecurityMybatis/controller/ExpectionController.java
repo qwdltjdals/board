@@ -1,9 +1,6 @@
 package com.study.SpringSecurityMybatis.controller;
 
-import com.study.SpringSecurityMybatis.exception.AccessTokenVailedException;
-import com.study.SpringSecurityMybatis.exception.NotFoundBoardException;
-import com.study.SpringSecurityMybatis.exception.SignupException;
-import com.study.SpringSecurityMybatis.exception.ValidException;
+import com.study.SpringSecurityMybatis.exception.*;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.validation.FieldError;
@@ -36,6 +33,11 @@ public class ExpectionController {
     @ExceptionHandler(NotFoundBoardException.class)
     public ResponseEntity<?> notFoundBoardException(NotFoundBoardException e) {
         return ResponseEntity.status(404).body(e.getMessage());
+    }
+
+    @ExceptionHandler(AccessDeniedException.class)
+    public ResponseEntity<?> accessDeniedException(AccessDeniedException e) {
+        return ResponseEntity.status(403).body(e.getMessage());
     }
 
 }

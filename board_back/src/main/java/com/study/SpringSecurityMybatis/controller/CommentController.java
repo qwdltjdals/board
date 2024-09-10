@@ -14,14 +14,18 @@ public class CommentController {
 
     @PostMapping("/board/comment")
     public ResponseEntity<?> writeComment(@RequestBody ReqWriteCommentDto dto) {
-
         commentService.write(dto);
-        System.out.println(dto);
         return ResponseEntity.ok().body(true);
     }
 
-    @GetMapping("/board/{boardId}/comment")
+    @GetMapping("/board/{boardId}/comments") // 여러개의 댓글 정보 - List로 넘겨줌
     public ResponseEntity<?> getComments(@PathVariable Long boardId) {
         return ResponseEntity.ok().body(commentService.getComments(boardId));
+    }
+
+    @DeleteMapping("/board/comment/{commentId}")
+    public ResponseEntity<?> deleteComment(@PathVariable Long commentId) {
+        commentService.deleteComment(commentId);
+        return ResponseEntity.ok().body(true);
     }
 }

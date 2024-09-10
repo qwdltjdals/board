@@ -202,54 +202,6 @@ function DetailPage(props) {
         content: "",
     });
 
-    const handleReplyButtonOnClick = (commentId) => {
-        setCommentData({
-            boardId, // 변수랑 키값이랑 같으면 생략이 가ㅡㄴㅇ하다.
-            parentId: null,
-            content: "",
-        });
-        setCommentData(commentData => ({
-            ...commentData,
-            parentId: commentId === commentData.parentId ? null : commentId
-        }))
-        
-    }
-
-    const handleCommentInputOnChange = (e) => {
-        setCommentData(commentData => ({
-            ...commentData,
-            [e.target.name]: e.target.value
-        }));
-    }
-
-    const commentMutation = useMutation(
-        async () => {
-            return await instance.post("/board/comment", commentData);
-        },
-        {
-            onSuccess: response => {
-                console.log(response)
-                alert("댓글 작성이 완료되었습니다.");
-                setCommentData({
-                    boardId, // 변수랑 키값이랑 같으면 생략이 가ㅡㄴㅇ하다.
-                    parentId: null,
-                    content: "",
-                })
-                comments.refetch();
-            }
-        }
-    );
-
-    const handleCommentSubmitOnClick = () => {
-        if (!userInfoData?.data) {
-            if (window.confirm("로그인 후 이용가능합니다. 로그인 페이지로 이동하시겠습니까?")) {
-                navigate("/user/login")
-            }
-            return;
-        }
-        commentMutation.mutateAsync();
-    }
-
     const board = useQuery(
         ["boardQuary", boardId], // 키값, boardId가 바뀌면 다시 랜더링
         async () => { // 요청 - 함수
@@ -266,15 +218,7 @@ function DetailPage(props) {
             // }
         }
 
-    ); // 리엑트 쿼리
-
-    // 서버 스테이트는 리엑트쿼리로 관리를 하겠다!
-    // 클라이언트 스테이트는 useState나 recoil로 관리하겠다!
-    //혹은
-    // 리엑트쿼리 = 전역 상태
-    // 단점 - 랜더링 되어있는 동안에 메모리를 계속 사용함
-    // 전역상태를 무분별하게 쓰면 사이트가 무거워짐
-
+    );
 
     const boardLike = useQuery(
         ["boardLikeQuery"],
@@ -286,6 +230,25 @@ function DetailPage(props) {
             retry: 0,
         }
     );
+
+    const comments = useQuery(
+        ["commentsQuery"],
+        async () => {
+            return await instance.get(`/board/${boardId}/comments`)
+        },
+        {
+            retry: 0,
+            onSuccess: response => console.log(response)
+        }
+    );
+    // 리엑트 쿼리
+
+    // 서버 스테이트는 리엑트쿼리로 관리를 하겠다!
+    // 클라이언트 스테이트는 useState나 recoil로 관리하겠다!
+    //혹은
+    // 리엑트쿼리 = 전역 상태
+    // 단점 - 랜더링 되어있는 동안에 메모리를 계속 사용함
+    // 전역상태를 무분별하게 쓰면 사이트가 무거워짐
 
     const likeMutation = useMutation(
         async () => {
@@ -309,15 +272,38 @@ function DetailPage(props) {
         }
     );
 
-    const comments = useQuery(
-        ["commentsQuery"],
+    // 리엑트 쿼리는 왜?
+    // useQuery = get요청 - 자동으로 가져올때, refetch할때 쓰는거 - 요청, 응답 관리해주는거 - 요청 응답을 하는게 아님! - 활용하기 위해 쓰는거
+    // axios의 요청과 응답을 관리해 주는게 리엑트 쿼리
+    // client state에서는 recoil을 씀
+    const commentMutation = useMutation( // Mutation - post put delete할때 씀 - 내가 원할 때 mutate라는 메소드를 호출해서 동작하게 만드는 거
         async () => {
-            return await instance.get(`/board/${boardId}/comment`)
+            return await instance.post("/board/comment", commentData);
         },
         {
-            retry: 0,
-            onSuccess: response => console.log(response)
+            onSuccess: response => {
+                console.log(response)
+                alert("댓글 작성이 완료되었습니다.");
+                setCommentData({
+                    boardId, // 변수랑 키값이랑 같으면 생략이 가ㅡㄴㅇ하다.
+                    parentId: null,
+                    content: "",
+                })
+                comments.refetch(); // 리패치 : useQueryClient를 안쓰고 useQuery를 씀 - 같은 위치에 이게 있어야함
+                // 자식요소에서 리패치 하고 싶은 경우 - useQueryClient에서 인벨리테이트
+            }
         }
+    );
+
+    const deleteCommentMutation = useMutation(
+        async (commentId) => await instance.delete(`/board/comment/${commentId}`), // mutateAsync에 넣어주면 들어감(commentId)
+        {
+            onSuccess: responce => {
+                alert("댓글을 삭제하였습니다.");
+                comments.refetch();
+            }
+        },
+
     )
 
     const handleLikeOnClick = () => {
@@ -328,12 +314,42 @@ function DetailPage(props) {
             return;
         }
         likeMutation.mutateAsync(); // 이때 호출됨
-    }
+    };
 
     const handleDisLikeOnClick = () => {
         disLikeMutation.mutateAsync();
+    };
+
+    const handleCommentInputOnChange = (e) => {
+        setCommentData(commentData => ({
+            ...commentData,
+            [e.target.name]: e.target.value
+        }));
     }
 
+    const handleCommentSubmitOnClick = () => {
+        if (!userInfoData?.data) {
+            if (window.confirm("로그인 후 이용가능합니다. 로그인 페이지로 이동하시겠습니까?")) {
+                navigate("/user/login")
+            }
+            return;
+        }
+        commentMutation.mutateAsync();
+    }
+
+    const handleReplyButtonOnClick = (commentId) => {
+        setCommentData(commentdata => ({
+            boardId, // 변수랑 키값이랑 같으면 생략이 가ㅡㄴㅇ하다.
+            parentId: commentId === commentData.parentId ? null : commentId,
+            content: "",
+        }));
+    }
+
+    const handleDeleteCommentButtonOnClick = (commentId) => {
+        if (window.confirm("정말 삭제하시겠습니까?")) {
+            deleteCommentMutation.mutateAsync(commentId);
+        }
+    }
 
     return (
         <div css={layout}>
@@ -403,7 +419,7 @@ function DetailPage(props) {
                         <div>
                             {
                                 comments.data?.data.comments.map(comment =>  // 가지고온거 = 처음 data / dto = 두번째 data
-                                    <>
+                                    <div key={comment.id} >
                                         <div css={commentListContainer(comment.level)}>
                                             <div>
                                                 <img src={comment.img} alt="" />
@@ -411,7 +427,7 @@ function DetailPage(props) {
                                             <div css={commentDetail}>
                                                 <div css={detailHeader}>
                                                     <span>{comment.username} </span>
-                                                    <span> {comment.createDate}</span>
+                                                    <span> {new Date(comment.createDate).toLocaleString()}</span>
                                                 </div>
                                                 <pre css={detailContents}>{comment.content}</pre>
                                                 <div css={detailButtons}>
@@ -419,13 +435,15 @@ function DetailPage(props) {
                                                         userInfoData?.data?.userId === comment.writerId &&
                                                         <div>
                                                             <button>수정</button>
-                                                            <button>삭제</button>
+                                                            <button onClick={() => handleDeleteCommentButtonOnClick(comment.id)}>삭제</button>
                                                         </div>
                                                     }
-
-                                                    <div>
-                                                        <button onClick={() => handleReplyButtonOnClick(comment.id)}>답글</button>
-                                                    </div>
+                                                    {
+                                                        comment.level < 3 &&
+                                                        <div>
+                                                            <button onClick={() => handleReplyButtonOnClick(comment.id)}>답글</button>
+                                                        </div>
+                                                    }
                                                 </div>
                                             </div>
                                         </div>
@@ -437,18 +455,14 @@ function DetailPage(props) {
                                             </div>
                                         }
 
-                                    </>
+                                    </div>
                                 )
-
                             }
-
                         </div>
                     </div>
                 </>
             }
         </div>
-
-
     );
 }
 

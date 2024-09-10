@@ -87,4 +87,15 @@ public class BoardService {
     public void disLike(Long boardLikeId) { // 라이크 삭제하는거
         boardLikeMapper.deleteById(boardLikeId);
     }
+
+    public void deleteBoard(Long boardId) {
+        PrincipalUser principalUser = (PrincipalUser) SecurityContextHolder
+                .getContext()
+                .getAuthentication()
+                .getPrincipal();
+        
+        if(principalUser.getId() != boardMapper.findById().)
+
+        boardMapper.deleteBoardById(boardId);
+    }
 }

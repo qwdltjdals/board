@@ -120,10 +120,6 @@ function IndexPage(props) {
     const accessTokenValidState = queryClint.getQueryState("accessTokenValidQuery");
     const userInfoState = queryClint.getQueryState("userInfoQuery");
 
-
-    console.log(accessTokenValidState);
-    console.log(userInfoState);
-
     // queryClint.invalidateQueries() // 지금까지 가져온 쿼리들 만료 - 후 다시 가져옴
 
     const haneldLoginOnClick = () => {

@@ -98,7 +98,6 @@ function WritePage(props) {
 
     const handleWriteSubmitOnClick = async () => {
         try {
-            
             const response = await instance.post("/board", board) // await이 있어야 resolve데이터가 response에 담김
             alert("작성이 완료되었습니다.")
             navigate(`/board/detail/${response.data.boardId}`) // 컨트롤러에서 응답받은 키값   

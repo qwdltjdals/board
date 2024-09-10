@@ -48,4 +48,10 @@ public class BoardController {
         boardService.disLike(boardLikeId);
         return ResponseEntity.ok().body(true);
     }
+
+    @DeleteMapping("/board/{boardId}")
+    public ResponseEntity<?> deleteBoard(@PathVariable Long boardId) {
+        boardService.deleteBoard(boardId);
+        return ResponseEntity.ok().body(true);
+    }
 }

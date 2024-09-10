@@ -8,4 +8,5 @@ public interface BoardMapper {
     int save(Board board);
     Board findById(Long id);
     int modifyViewCountById(Long id);
+    int deleteBoardById(Long boardId);
 }

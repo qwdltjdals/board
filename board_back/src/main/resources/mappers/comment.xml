@@ -11,6 +11,40 @@
         values
             (default, #{boardId}, #{parentId}, #{content}, #{writerId}, now())
     </insert>
+    <delete id="deleteById">
+        WITH RECURSIVE comment_tree(id, board_id, parent_id, content, writer_id, create_date) AS (
+        SELECT
+            id,
+            board_id,
+            parent_id,
+            content,
+            writer_id,
+            create_date,
+        FROM
+            comment
+        WHERE
+            id = #{id}
+
+        UNION ALL
+
+        SELECT
+            c.id,
+            c.board_id,
+            c.parent_id,
+            c.content,
+            c.writer_id,
+            c.create_date,
+        FROM
+            comment c
+            JOIN comment_tree ct ON(c.parent_id = ct.id)
+        )
+
+        delete
+        from
+            comment
+        where
+            id in(select id from comment_tree)
+    </delete>
     <select id="findAllByBoardId" resultType="com.study.SpringSecurityMybatis.entity.Comment">
         WITH RECURSIVE comment_tree(id, board_id, parent_id, content, writer_id, create_date, level, path) AS (
         SELECT
@@ -21,11 +55,12 @@
             writer_id,
             create_date,
             0 AS level,
-            CAST(id AS VARCHAR(255)) AS path
+            LPAD(CAST(id AS VARCHAR(255)),5, 0) AS path
         FROM
             comment
         WHERE
             parent_id IS NULL
+            and board_id = #{boardId}
 
         UNION ALL
 
@@ -37,10 +72,12 @@
             c.writer_id,
             c.create_date,
             ct.level + 1,
-            CONCAT(ct.path, ',', c.id) AS path
+            CONCAT(ct.path, ',', LPAD(c.id, 5, 0)) AS path
         FROM
             comment c
             JOIN comment_tree ct ON(c.parent_id = ct.id)
+        where
+            c.board_id = ${boardId}
         )
 
         SELECT
@@ -49,6 +86,7 @@
             ct.parent_id as parentId,
             ct.content,
             ct.writer_id as writerId,
+            ct.create_date as createDate,
             ct.create_date as createId,
             ct.level,
             u.username,
@@ -56,9 +94,7 @@
         FROM
             comment_tree ct
             left outer join user u on(u.id = ct.writer_id)
-        where
-            ct.board_id = #{boardId} <!-- 해당 게시글의 댓글만 가져오게 함-->
-        ORDER BY
+        ORDER BY <!--실행 순서는 select다음이지만, from 기준임! -->
             ct.path;
 
     </select>
@@ -69,6 +105,30 @@
             comment
         where
             board_id = #{boardId}
+    </select>
+    <select id="findById" resultType="com.study.SpringSecurityMybatis.entity.Comment">
+        select
+            id,
+            parent_id as parentId,
+            content,
+            writer_id as writerId,
+            create_date as createDate
+        from
+            comment
+        where
+            id = #{id}
+    </select>
+    <select id="findByParentId" resultType="com.study.SpringSecurityMybatis.entity.Comment">
+        select
+            id,
+            parent_id as parentId,
+            content,
+            writer_id as writerId,
+            create_date as createDate
+        from
+            comment
+         where
+        parent_id = #{parentId}
     </select>
 
 </mapper>

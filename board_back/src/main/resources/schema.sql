@@ -57,15 +57,22 @@
 --    board_id BIGINT not null,
 --    user_id BIGINT not null
 --);
+--
+--CREATE TABLE COMMENT (
+--    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+--    board_id BIGINT not null,
+--    parent_id BIGINT null,
+--    content TEXT not null,
+--    writer_id BIGINT not null,
+--    create_date DATETIME not null
+--);
 
-CREATE TABLE COMMENT (
-    id BIGINT AUTO_INCREMENT PRIMARY KEY,
-    board_id BIGINT not null,
-    parent_id BIGINT null,
-    content TEXT not null,
-    writer_id BIGINT not null,
-    create_date DATETIME not null
-);
+CREATE TRIGGER before_delete_comment
+BEFORE DELETE ON COMMENT
+FOR EACH ROW
+BEGIN
+    delete from comment where parent_id = old.id -- 3번을 지움 - old = 3번 - 삭제를 하면 3번이 지워짐 - 3번을 부모로 가지고 있는 아이들도 다 지움 - 딜리트 이벤트 - 계속 반복
+END;
 
 
 --ALTER TABLE BOARD ADD COLUMN view_count int not null DEFAULT 0;
