@@ -1,5 +1,6 @@
 package com.study.SpringSecurityMybatis.repository;
 
+import com.study.SpringSecurityMybatis.dto.request.ReqModifyCommentDto;
 import com.study.SpringSecurityMybatis.entity.Comment;
 import org.apache.ibatis.annotations.Mapper;
 
@@ -13,4 +14,5 @@ public interface CommentMapper {
     int deleteById(Long id);
     Comment findById(Long id);
     Comment findByParentId(Long parentId);
+    int updateComment(Comment comment);
 }

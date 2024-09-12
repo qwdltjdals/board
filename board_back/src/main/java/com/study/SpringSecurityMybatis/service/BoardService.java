@@ -1,11 +1,15 @@
 package com.study.SpringSecurityMybatis.service;
 
+import com.study.SpringSecurityMybatis.dto.request.ReqBoardListDto;
 import com.study.SpringSecurityMybatis.dto.request.ReqWriteBoardDto;
 import com.study.SpringSecurityMybatis.dto.response.RespBoardDetailDto;
 import com.study.SpringSecurityMybatis.dto.response.RespBoardLikeInfoDto;
+import com.study.SpringSecurityMybatis.dto.response.RespBoardListDto;
 import com.study.SpringSecurityMybatis.dto.response.RespWriteBoardDto;
 import com.study.SpringSecurityMybatis.entity.Board;
 import com.study.SpringSecurityMybatis.entity.BoardLike;
+import com.study.SpringSecurityMybatis.entity.BoardList;
+import com.study.SpringSecurityMybatis.exception.AccessDeniedException;
 import com.study.SpringSecurityMybatis.exception.NotFoundBoardException;
 import com.study.SpringSecurityMybatis.repository.BoardLikeMapper;
 import com.study.SpringSecurityMybatis.repository.BoardMapper;
@@ -16,6 +20,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.security.PublicKey;
+import java.util.List;
 import java.util.jar.Attributes;
 
 @Service
@@ -36,6 +41,17 @@ public class BoardService {
         Board board = dto.toEntity(principalUser.getId());
         boardMapper.save(board);
         return board.getId();
+    }
+
+    public RespBoardListDto getBoardList(ReqBoardListDto dto) {
+        Long startIndex = (dto.getPage() -1) * dto.getLimit();
+        List<BoardList> boardLists = boardMapper.findAllByStartIndexAndLimit(startIndex, dto.getLimit());
+        Integer boardTotalCount = boardMapper.getCountAll();
+
+        return RespBoardListDto.builder()
+                .boards(boardLists)
+                .totalCount(boardTotalCount)
+                .build();
     }
 
     public RespBoardDetailDto getBoardDetail(Long boardId) {
@@ -93,9 +109,11 @@ public class BoardService {
                 .getContext()
                 .getAuthentication()
                 .getPrincipal();
-        
-        if(principalUser.getId() != boardMapper.findById().)
 
+        Board board = boardMapper.findById(boardId);
+        if(principalUser.getId() != board.getId()) {
+            throw new AccessDeniedException();
+        }
         boardMapper.deleteBoardById(boardId);
     }
 }

@@ -10,6 +10,7 @@ import OAuth2JoinPage from "./pages/OAuth2JoinPage/OAuth2JoinPage";
 import OAuth2LoginPage from "./pages/OAuth2LoginPage/OAuth2LoginPage";
 import WritePage from "./pages/boardPages/WritePage/WritePage";
 import DetailPage from "./pages/boardPages/DetailPage/DetailPage";
+import NumberBoardListPage from "./pages/NumberBoardListPage/NumberBoardListPage";
 
 function App() {
 
@@ -107,7 +108,8 @@ function App() {
             <Route path="/user/login/oauth2" element={<OAuth2LoginPage />} />
             <Route path="/profile" element={<UserProfilePage />} />
 
-            <Route path="/board" element={<></>} />
+            <Route path="/board/number" element={<NumberBoardListPage />} />
+            <Route path="/board/scroll" element={<></>} />
             <Route path="/board/write" element={<WritePage />} />
             <Route path="/board/detail/:boardId" element={<DetailPage />} />
 

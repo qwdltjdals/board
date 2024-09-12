@@ -1,13 +1,11 @@
 package com.study.SpringSecurityMybatis.controller;
 
 import com.study.SpringSecurityMybatis.aspect.annotation.ValidAop;
+import com.study.SpringSecurityMybatis.dto.request.ReqBoardListDto;
 import com.study.SpringSecurityMybatis.dto.request.ReqWriteBoardDto;
-import com.study.SpringSecurityMybatis.dto.response.RespWriteBoardDto;
-import com.study.SpringSecurityMybatis.entity.Test;
 import com.study.SpringSecurityMybatis.service.BoardService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.validation.BeanPropertyBindingResult;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
@@ -25,6 +23,12 @@ public class BoardController {
     @PostMapping("/board")
     public ResponseEntity<?> write(@Valid @RequestBody ReqWriteBoardDto dto, BindingResult bindingResult) {
         return ResponseEntity.ok().body(Map.of("boardId", boardService.writeBoard(dto))); // boardId를 프론트에 넘겨주는거
+    }
+
+    @GetMapping("/board/list")
+    public ResponseEntity<?> getBoards(ReqBoardListDto dto) {
+        System.out.println(dto);
+        return ResponseEntity.ok().body(boardService.getBoardList(dto));
     }
 
     @GetMapping("/board/{boardId}")

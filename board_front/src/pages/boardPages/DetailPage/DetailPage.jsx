@@ -202,6 +202,11 @@ function DetailPage(props) {
         content: "",
     });
 
+    const [commentModifyData, setCommentModifyData] = useState({
+        commentId: 0,
+        content: "",
+    });
+
     const board = useQuery(
         ["boardQuary", boardId], // 키값, boardId가 바뀌면 다시 랜더링
         async () => { // 요청 - 함수
@@ -217,7 +222,6 @@ function DetailPage(props) {
 
             // }
         }
-
     );
 
     const boardLike = useQuery(
@@ -295,6 +299,20 @@ function DetailPage(props) {
         }
     );
 
+    const modifyCommentUpdateMutation = useMutation(
+        async () => await instance.put(`/board/comment/${commentModifyData.contentcommentId}`, commentModifyData), // 매개변수가 아니라 상태를 직접적으로 넣음
+        {
+            onSuccess: () => {
+                alert("댓글 수정이 완료되었습니다.");
+                setCommentModifyData({ // 값들 다시 초기화 시킴
+                    contentId: 0,
+                    content: "",
+                });
+                comments.refetch();
+            }
+        }
+    )
+
     const deleteCommentMutation = useMutation(
         async (commentId) => await instance.delete(`/board/comment/${commentId}`), // mutateAsync에 넣어주면 들어감(commentId)
         {
@@ -303,7 +321,6 @@ function DetailPage(props) {
                 comments.refetch();
             }
         },
-
     )
 
     const handleLikeOnClick = () => {
@@ -327,7 +344,14 @@ function DetailPage(props) {
         }));
     }
 
-    const handleCommentSubmitOnClick = () => {
+    const handleModifyInputOnChange = (e) => {
+        setCommentModifyData(commentData => ({
+            ...commentData,
+            [e.target.name]: e.target.value
+        }));
+    }
+
+    const handleCommentSubmitOnClick = () => { // 등록하기 버튼 누름
         if (!userInfoData?.data) {
             if (window.confirm("로그인 후 이용가능합니다. 로그인 페이지로 이동하시겠습니까?")) {
                 navigate("/user/login")
@@ -337,11 +361,29 @@ function DetailPage(props) {
         commentMutation.mutateAsync();
     }
 
+    const handleCommentModifySubmitOnClick = () => { // 수정하기 버튼 누름
+        modifyCommentUpdateMutation.mutateAsync();
+    }
+
     const handleReplyButtonOnClick = (commentId) => {
         setCommentData(commentdata => ({
             boardId, // 변수랑 키값이랑 같으면 생략이 가ㅡㄴㅇ하다.
             parentId: commentId === commentData.parentId ? null : commentId,
             content: "",
+        }));
+    }
+
+    const handleModifyCommentButtonOnClick = (commentId, content) => {
+        setCommentModifyData(commentData => ({
+            commentId,
+            content
+        }));
+    }
+
+    const handleModifyCommentCancleButonOnClick = () => {
+        setCommentModifyData(commentData => ({
+            commentId: 0,
+            content: ""
         }));
     }
 
@@ -434,7 +476,13 @@ function DetailPage(props) {
                                                     {
                                                         userInfoData?.data?.userId === comment.writerId &&
                                                         <div>
-                                                            <button>수정</button>
+                                                            {
+                                                                commentModifyData.commentId === comment.id
+                                                                    ?
+                                                                    <button onClick={handleModifyCommentCancleButonOnClick}>취소</button>
+                                                                    :
+                                                                    <button onClick={() => handleModifyCommentButtonOnClick(comment.id, comment.content)}>수정</button>
+                                                            }
                                                             <button onClick={() => handleDeleteCommentButtonOnClick(comment.id)}>삭제</button>
                                                         </div>
                                                     }
@@ -454,7 +502,13 @@ function DetailPage(props) {
                                                 <button onClick={handleCommentSubmitOnClick}>작성하기</button>
                                             </div>
                                         }
-
+                                        {
+                                            commentModifyData.commentId === comment.id &&
+                                            <div css={commentWriteBox(comment.level)}>
+                                                <textarea name="content" onChange={handleModifyInputOnChange} value={commentModifyData.content} placeholder="댓글 내용을 입력해 주세요" ></textarea>
+                                                <button onClick={handleCommentModifySubmitOnClick}>수정하기</button>
+                                            </div>
+                                        }
                                     </div>
                                 )
                             }

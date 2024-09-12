@@ -1,5 +1,6 @@
 package com.study.SpringSecurityMybatis.controller;
 
+import com.study.SpringSecurityMybatis.dto.request.ReqModifyCommentDto;
 import com.study.SpringSecurityMybatis.dto.request.ReqWriteCommentDto;
 import com.study.SpringSecurityMybatis.service.CommentService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,6 +27,12 @@ public class CommentController {
     @DeleteMapping("/board/comment/{commentId}")
     public ResponseEntity<?> deleteComment(@PathVariable Long commentId) {
         commentService.deleteComment(commentId);
+        return ResponseEntity.ok().body(true);
+    }
+
+    @PutMapping("/board/comment/{commentId}")
+    public ResponseEntity<?> updateComment(@RequestBody ReqModifyCommentDto dto) {
+        commentService.updateComment(dto);
         return ResponseEntity.ok().body(true);
     }
 }
