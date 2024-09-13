@@ -44,9 +44,9 @@ public class BoardService {
     }
 
     public RespBoardListDto getBoardList(ReqBoardListDto dto) {
-        Long startIndex = (dto.getPage() -1) * dto.getLimit();
+        Long startIndex = (dto.getPage() -1) * dto.getLimit(); // 리미트 적용 시 사용되는 규칙
         List<BoardList> boardLists = boardMapper.findAllByStartIndexAndLimit(startIndex, dto.getLimit());
-        Integer boardTotalCount = boardMapper.getCountAll();
+        Integer boardTotalCount = boardMapper.getCountAll(); // 카운트 전체 갯수
 
         return RespBoardListDto.builder()
                 .boards(boardLists)

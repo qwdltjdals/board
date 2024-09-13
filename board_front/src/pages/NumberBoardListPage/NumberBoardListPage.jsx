@@ -40,25 +40,28 @@ const paginateContainer = css`
 `;
 
 function NumberBoardListPage(props) {
-    const [searchParams, setSearchParams] = useSearchParams();
+    const [searchParams, setSearchParams] = useSearchParams(); // 주소에 파라미터 - 쿼리스트링 - 주소:포트/페이지URL?key=value
     const [totalPageCount, setTotalPageCount] = useState(1);
     const navigate = useNavigate();
     const limit = 10; // 한 페이지에 10개 들어가게 함
 
     const boardList = useQuery(
-        ["boardListQuery", searchParams.get("page")],
-        async () => await instance.get(`/board/list?page=${searchParams.get("page")}&limit=${limit}`), // params로 넘겨줌
+        ["boardListQuery", searchParams.get("page")], // 페이지의 값이 바뀌면 다시 요청 날려라
+        async () => await instance.get(`/board/list?page=${searchParams.get("page")}&limit=${limit}`), // params로 넘겨줌 페이지 번호랑 리미트 보내줌
         {
             retry: 0,
             onSuccess: response => setTotalPageCount(
                 response.data.totalCount % limit === 0
                     ? response.data.totalCount / limit
-                    : (response.data.totalCount / limit) + 1)
+                    : Math.floor(response.data.totalCount / limit) + 1) // 소수점이 남아있음
         }
     );
 
-    const handlePageOnchange = (event) => {
-        navigate(`/board/number?page=${event.selected + 1}`);
+    // ? 를 기준으로 오른쪽이 서치파람 , 왼쪽이 파람
+    // 페이지 번호나 보드번호 = 주로 그냥 useParams를 많이씀 but get요청일때, 옵션(변수)의 값이면 보통 뒤에 queryString으로 작성함 - searchParams
+
+    const handlePageOnchange = (e) => {
+        navigate(`/board/number?page=${e.selected + 1}`); // 페이지 뒤에 주소만 바뀜 - 랜더링은 바뀌지 않음 - 페이지라고 하는 키값의 값이 바뀜
     }
 
     return (
@@ -94,10 +97,10 @@ function NumberBoardListPage(props) {
             </table>
             <div css={paginateContainer}>
                 <ReactPaginate
-                    breakLabel="..."
+                    breakLabel="..." // 중간에 띄울 숫자
                     previousLabel={<><IoMdArrowDropleft /></>}
                     nextLabel={<><IoMdArrowDropright /></>}
-                    pageCount={totalPageCount - 1} // 전체 페이지 갯수 - 게시글 수에 따라 달라짐
+                    pageCount={totalPageCount} // 전체 페이지 갯수 - 게시글 수에 따라 달라짐
                     marginPagesDisplayed={2}
                     pageRangeDisplayed={5}
                     activeClassName='active'
