@@ -1,5 +1,5 @@
 import { css } from '@emotion/react';
-import React from 'react';
+import React, { useRef, useState } from 'react';
 import { useQueryClient } from 'react-query';
 import { Link, useNavigate } from 'react-router-dom';
 /** @jsxImportSource @emotion/react */
@@ -34,6 +34,10 @@ const leftBox = css`
     border: 2px solid #dbdbdb;
     border-radius: 10px;
     width: 64%;
+
+    & a {
+        margin-right: 10px;
+    }
 `;
 
 const rightBox = css`
@@ -119,8 +123,19 @@ function IndexPage(props) {
     const queryClint = useQueryClient();
     const accessTokenValidState = queryClint.getQueryState("accessTokenValidQuery");
     const userInfoState = queryClint.getQueryState("userInfoQuery");
+    const [searchValue, setSearchValue] = useState("");
 
     // queryClint.invalidateQueries() // 지금까지 가져온 쿼리들 만료 - 후 다시 가져옴
+
+    const handleSearchInputOnChange = (e) => {
+        setSearchValue(e.target.value);
+    }
+
+    const handleSearchIputOnKeyDown = (e) => {
+        if(e.keyCode === 13) {
+            navigate(`/board/search?page=1&option=all&search=${searchValue}`)
+        }
+    }
 
     const haneldLoginOnClick = () => {
         navigate("/user/login");
@@ -133,7 +148,10 @@ function IndexPage(props) {
     return (
         <div css={layout}>
             <header css={header}>
-                <input type="search" placeholder='검색어를 입력해 주세요.' />
+                <input type="search" placeholder='검색어를 입력해 주세요.'
+                onChange={handleSearchInputOnChange}
+                onKeyDown={handleSearchIputOnKeyDown}
+                />
             </header>
 
             <main css={main}>
@@ -141,6 +159,9 @@ function IndexPage(props) {
                     <Link to={"/board/number?page=1"}>게시글</Link>
                     <Link to={"/board/scroll"}>게시글</Link>
                     <Link to={"/board/write"}>글쓰기</Link>
+                    <Link to={"/board/scroll"}>스크롤</Link>
+                    <Link to={"/board/search?page=1"}>검새ㄱ</Link>
+                    <Link to={"/board/number"}>번호</Link>
                 </div>
                 {
                     accessTokenValidState.status !== "success"

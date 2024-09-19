@@ -2,6 +2,7 @@ package com.study.SpringSecurityMybatis.controller;
 
 import com.study.SpringSecurityMybatis.aspect.annotation.ValidAop;
 import com.study.SpringSecurityMybatis.dto.request.ReqBoardListDto;
+import com.study.SpringSecurityMybatis.dto.request.ReqSearchDto;
 import com.study.SpringSecurityMybatis.dto.request.ReqWriteBoardDto;
 import com.study.SpringSecurityMybatis.service.BoardService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,9 +26,13 @@ public class BoardController {
         return ResponseEntity.ok().body(Map.of("boardId", boardService.writeBoard(dto))); // boardId를 프론트에 넘겨주는거
     }
 
+    @GetMapping("/board/search")
+    public ResponseEntity<?> getSearchBoards(ReqSearchDto dto) {
+        return ResponseEntity.ok().body(boardService.getSearchBoard(dto));
+    }
+
     @GetMapping("/board/list")
     public ResponseEntity<?> getBoards(ReqBoardListDto dto) {
-        System.out.println(dto);
         return ResponseEntity.ok().body(boardService.getBoardList(dto));
     }
 

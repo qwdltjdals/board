@@ -39,35 +39,58 @@ const paginateContainer = css`
     }
 `;
 
-function NumberBoardListPage(props) {
+function SearchBoardPage(props) {
     const [searchParams, setSearchParams] = useSearchParams(); // 주소에 파라미터 - 쿼리스트링 - 주소:포트/페이지URL?key=value
     const [totalPageCount, setTotalPageCount] = useState(1);
     const navigate = useNavigate();
+    const [searchValue, setSearchValue] = useState(searchParams.get("search") ?? "");
+    const [searchOption, setSearchOption] = useState(searchParams.get("option") ?? "all");
     const limit = 10; // 한 페이지에 10개 들어가게 함
 
     const boardList = useQuery(
-        ["boardListQuery", searchParams.get("page")], // 페이지의 값이 바뀌면 다시 요청 날려라
-        
-        async () => await instance.get(`/board/list?page=${searchParams.get("page")}&limit=${limit}`), // params로 넘겨줌 페이지 번호랑 리미트 보내줌
+        ["boardListQuery", searchParams.get("page"), searchParams.get("option"), searchParams.get("search")], // 페이지의 값이 바뀌면 다시 요청 날려라
+        async () => await instance.get(`/board/search?page=${searchParams.get("page")}&limit=${limit}&search=${searchValue}&option=${searchOption}`), // params로 넘겨줌 페이지 번호랑 리미트 보내줌
         {
             retry: 0,
+            refetchOnWindowFocus: false,
             onSuccess: response => setTotalPageCount(
                 response.data.totalCount % limit === 0
                     ? response.data.totalCount / limit
-                    : Math.floor(response.data.totalCount / limit) + 1) // 소수점이 남아있음
+                    : Math.floor(response.data.totalCount / limit) + 1) // 소수점이 남아있음 - floor소수점 절삭
         }
     );
 
     // ? 를 기준으로 오른쪽이 서치파람 , 왼쪽이 파람
     // 페이지 번호나 보드번호 = 주로 그냥 useParams를 많이씀 but get요청일때, 옵션(변수)의 값이면 보통 뒤에 queryString으로 작성함 - searchParams
 
+    const handleSearchOptionOnChange = (e) => {
+        setSearchOption(e.target.value);
+    }
+
+    const handleSrarchInputOnChange = (e) => {
+        setSearchValue(e.target.value);
+    }
+
+    const handleSrarchInputOnClick = () => {
+        navigate(`/board/search?page=1&option=${searchOption}&search=${searchValue}`);
+    }
+
     const handlePageOnchange = (e) => {
-        navigate(`/board/number?page=${e.selected + 1}`); // 페이지 뒤에 주소만 바뀜 - 랜더링은 바뀌지 않음 - 페이지라고 하는 키값의 값이 바뀜
+        navigate(`/board/search?page=${e.selected + 1}&option=${searchOption}&search=${searchValue}`); // 페이지 뒤에 주소만 바뀜 - 랜더링은 바뀌지 않음 - 페이지라고 하는 키값의 값이 바뀜
     }
 
     return (
         <div>
             <Link to={"/"}><h1>사이트 로고</h1></Link>
+            <div>
+                <select onChange={handleSearchOptionOnChange} value={searchOption}>
+                    <option value="all">전체</option>
+                    <option value="title">제목</option>
+                    <option value="writer">작성자</option>
+                </select>
+                <input type="search" onChange={handleSrarchInputOnChange} value={searchValue} />
+                <button onClick={handleSrarchInputOnClick}>검색</button>
+            </div>
             <table>
                 <thead>
                     <tr>
@@ -84,7 +107,7 @@ function NumberBoardListPage(props) {
                             ?
                             <></>
                             :
-                            boardList.data.data.boards.map(board => // boards = dto에서 만든거임
+                            boardList.data?.data?.boards?.map(board => // boards = dto에서 만든거임
                                 <tr key={board.id} onClick={() => navigate(`/board/detail/${board.id}`)}>
                                     <td>{board.id}</td>
                                     <td>{board.title}</td>
@@ -113,4 +136,4 @@ function NumberBoardListPage(props) {
     );
 }
 
-export default NumberBoardListPage;
+export default SearchBoardPage;

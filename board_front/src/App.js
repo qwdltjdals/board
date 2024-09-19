@@ -12,6 +12,7 @@ import WritePage from "./pages/boardPages/WritePage/WritePage";
 import DetailPage from "./pages/boardPages/DetailPage/DetailPage";
 import NumberBoardListPage from "./pages/NumberBoardListPage/NumberBoardListPage";
 import ScrollBoardListPage from "./pages/ScrollBoardListPage/ScrollBoardListPage";
+import SearchBoardPage from "./pages/SearchBoardPage/SearchBoardPage";
 
 function App() {
 
@@ -110,6 +111,7 @@ function App() {
             <Route path="/profile" element={<UserProfilePage />} />
 
             <Route path="/board/number" element={<NumberBoardListPage />} />
+            <Route path="/board/search" element={<SearchBoardPage />} />
             <Route path="/board/scroll" element={<ScrollBoardListPage />} />
             <Route path="/board/write" element={<WritePage />} />
             <Route path="/board/detail/:boardId" element={<DetailPage />} />  
