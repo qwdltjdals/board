@@ -31,6 +31,13 @@
         where
             id = #{id}
     </update>
+    <update id="modifyBoardById">
+        update board
+        set
+            title = #{title}, content = #{content}
+        where
+            id = #{id}
+    </update>
     <delete id="deleteBoardById">
         delete
         from
@@ -150,6 +157,16 @@
         <if test='option.equals("writer")'>
             and u.username like concat('%', trim(ifnull(#{searchValue}, '')), '%')
         </if>
+    </select>
+    <select id="findByIDModify" resultType="com.study.SpringSecurityMybatis.entity.Board">
+        select
+            id,
+            title,
+            content
+        from
+            board
+        where
+            id = #{boardId}
     </select>
 </mapper>
 

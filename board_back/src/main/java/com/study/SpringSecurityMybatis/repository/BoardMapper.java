@@ -21,4 +21,5 @@ public interface BoardMapper {
     int deleteBoardById(Long boardId);
     int getCountAll(); //넘겨줄거 없음
     int getCountAllBySearch(Map<String, Object> params);
+    int modifyBoardById(Board board);
 }

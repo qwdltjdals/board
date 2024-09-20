@@ -2,6 +2,7 @@ package com.study.SpringSecurityMybatis.controller;
 
 import com.study.SpringSecurityMybatis.aspect.annotation.ValidAop;
 import com.study.SpringSecurityMybatis.dto.request.ReqBoardListDto;
+import com.study.SpringSecurityMybatis.dto.request.ReqModifyBoardDto;
 import com.study.SpringSecurityMybatis.dto.request.ReqSearchDto;
 import com.study.SpringSecurityMybatis.dto.request.ReqWriteBoardDto;
 import com.study.SpringSecurityMybatis.service.BoardService;
@@ -38,6 +39,7 @@ public class BoardController {
 
     @GetMapping("/board/{boardId}")
     public ResponseEntity<?> getDetail(@PathVariable Long boardId) {
+        System.out.println(boardId);
         return ResponseEntity.ok().body(boardService.getBoardDetail(boardId));
     }
 
@@ -58,9 +60,21 @@ public class BoardController {
         return ResponseEntity.ok().body(true);
     }
 
-    @DeleteMapping("/board/{boardId}")
+    @DeleteMapping("/board/delete/{boardId}")
     public ResponseEntity<?> deleteBoard(@PathVariable Long boardId) {
         boardService.deleteBoard(boardId);
+        return ResponseEntity.ok().body(true);
+    }
+
+    @GetMapping("/board/modify/{boardId}")
+    public ResponseEntity<?> getBoardModify(@PathVariable Long boardId) {
+        System.out.println(boardId);
+        return ResponseEntity.ok().body(boardService.getBoardModify(boardId));
+    }
+
+    @PutMapping("/board/modify/{boardId}")
+    public ResponseEntity<?> modifyBoard(ReqModifyBoardDto dto) {
+        boardService.modifyBoard(dto);
         return ResponseEntity.ok().body(true);
     }
 }

@@ -1,13 +1,14 @@
 /** @jsxImportSource @emotion/react */
 
 import { useMutation, useQuery, useQueryClient } from "react-query";
-import { Link, useNavigate, useParams } from "react-router-dom";
+import { Link, Route, useNavigate, useParams } from "react-router-dom";
 import { instance } from "../../../apis/util/instance";
 import { css } from "@emotion/react";
 import { FcLike, FcLikePlaceholder } from "react-icons/fc";
 import { IoMdHeart, IoMdHeartEmpty } from "react-icons/io";
 import { GoHeart } from "react-icons/go";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import BoardModifyPage from "../BoardModifyPage/BoardModifyPage";
 
 const layout = css`
     box-sizing: border-box;
@@ -224,6 +225,18 @@ function DetailPage(props) {
         }
     );
 
+
+
+    // useEffect(() => {
+    //     if (board.isSuccess && board.data.data) {
+    //         setBoardModifyData({
+    //             boardId: board.data.data.boardId,
+    //             title: board.data.data.title,
+    //             content: board.data.data.content,
+    //         });
+    //     }
+    // }, [board.isSuccess, board.data]);
+
     const boardLike = useQuery(
         ["boardLikeQuery"],
         async () => {
@@ -242,9 +255,19 @@ function DetailPage(props) {
         },
         {
             retry: 0,
-            onSuccess: response => console.log(response)
         }
     );
+
+    // const modify = useQuery(
+    //     ["modifyQuery"],
+    //     async () => {
+    //         return await instance.get(`/board/${boardId}`)
+    //     },
+    //     {
+    //         retry: 0,
+    //     }
+    // );
+
     // 리엑트 쿼리
 
     // 서버 스테이트는 리엑트쿼리로 관리를 하겠다!
@@ -323,6 +346,15 @@ function DetailPage(props) {
         },
     )
 
+    const deleteBoardMutation = useMutation(
+        async (boardId) => await instance.delete(`/board/delete/${boardId}`),
+        {
+            onSuccess: responce => {
+                alert("삭제가 완료되었습니다");
+            }
+        }
+    )
+
     const handleLikeOnClick = () => {
         if (!userInfoData?.data) {
             if (window.confirm("로그인 후 이용가능합니다. 로그인 페이지로 이동하시겠습니까?")) {
@@ -393,6 +425,20 @@ function DetailPage(props) {
         }
     }
 
+    const handleModifyButtonOnClick = () => {
+        if (window.confirm("수정하시겠습니까?")) {
+
+            navigate(`/board/modify/${boardId}`)
+        }
+    }
+
+    const handleDeleteSubmitButtonOnClick = (boardId) => {
+        if(window.confirm("정말 삭제하시겠습니까?")) {
+            deleteBoardMutation.mutateAsync(boardId)
+            navigate("/board/scroll")
+        }
+    }
+
     return (
         <div css={layout}>
             <Link to={"/"}><h1>사이트 로고</h1></Link>
@@ -436,8 +482,8 @@ function DetailPage(props) {
                                 {
                                     board.data.data.writerId === userInfoData?.data.userId &&
                                     <>
-                                        <button>수정</button>
-                                        <button>삭제</button>
+                                        <button onClick={handleModifyButtonOnClick}>수정</button>
+                                        <button onClick={() => handleDeleteSubmitButtonOnClick(boardId)}>삭제</button>
                                     </>
                                 }
                             </div>
