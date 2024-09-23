@@ -6,15 +6,13 @@ import lombok.Data;
 
 @Data
 public class ReqModifyBoardDto {
-    private Long id;
+    private Long boardId;
     private String title;
     private String content;
 
-    private User user;
-
     public Board toEntity(Long userId) {
         return Board.builder()
-                .id(id)
+                .id(boardId)
                 .title(title)
                 .content(content)
                 .userId(userId)

@@ -149,13 +149,15 @@ public class BoardService {
                 .build();
     }
 
-    public void modifyBoard(ReqModifyBoardDto dto) {
+    public Long modifyBoard(ReqModifyBoardDto dto) {
+
         PrincipalUser principalUser = (PrincipalUser)SecurityContextHolder
                 .getContext()
                 .getAuthentication()
                 .getPrincipal();
-
         Board board = dto.toEntity(principalUser.getId());
+
         boardMapper.modifyBoardById(board);
+        return board.getId();
     }
 }

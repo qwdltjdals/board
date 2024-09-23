@@ -73,8 +73,8 @@ public class BoardController {
     }
 
     @PutMapping("/board/modify/{boardId}")
-    public ResponseEntity<?> modifyBoard(ReqModifyBoardDto dto) {
-        boardService.modifyBoard(dto);
-        return ResponseEntity.ok().body(true);
+    public ResponseEntity<?> modifyBoard(@RequestBody ReqModifyBoardDto dto) {
+        System.out.println(dto);
+        return ResponseEntity.ok().body(Map.of("boardId", boardService.modifyBoard(dto)));
     }
 }

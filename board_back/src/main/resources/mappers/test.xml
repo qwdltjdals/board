@@ -11,4 +11,30 @@
         values
             (default, #{username}, #{name}, #{gender})
     </insert>
+    <delete id="deleteTest">
+        del
+    </delete>
+    <select id="searchTestById" resultType="com.study.SpringSecurityMybatis.entity.Test">
+        select
+            *
+        from
+            test1
+        where
+            id = #{id}
+    </select>
+    <select id="testList" resultType="com.study.SpringSecurityMybatis.entity.Test">
+        select
+            *
+        from
+            test1
+        order by
+            dec id
+        limit #{startIndex}, #{limit}
+    </select>
+    <select id="getCountAll" resultType="java.lang.Integer">
+        select
+         count(*)
+        from
+            test1
+    </select>
 </mapper>

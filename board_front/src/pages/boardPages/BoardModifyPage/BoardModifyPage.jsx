@@ -88,11 +88,9 @@ function BoardModifyPage() {
     const navigate = useNavigate();
     const params = useParams();
     const boardId = params.boardId;
-    const quaryClient = useQueryClient();
-    const userInfoData = quaryClient.getQueryData("userInfoQuery");
 
     const [board, setBoard] = useState({
-        boardId: "",
+        boardId,
         title: "",
         content: ""
     });
@@ -105,26 +103,28 @@ function BoardModifyPage() {
         {
             refetchOnWindowFocus: false,
             retry: 0,
-            // onSuccess: response => { // 응답이 오면
-            //     console.log(response)
-            // },
-            // onError: error => { // 근데 에러면??
+            onSuccess: (response) => { // 응답이 오면
+                setBoard({
+                    boardId: boardId,
+                    title: response.data?.title,
+                    content: response.data?.content
 
-            // }
+                });
+            }
         }
     );
 
 
-    const modify = useMutation(
-        ["boardQuary"], // 키값, boardId가 바뀌면 다시 랜더링
-        async () => { // 요청 - 함수
-            return instance.put(`/board/modify/${boardId}`, board); // boardId = params에서 가져옴
-        },
-        {
-            refetchOnWindowFocus: false,
-            retry: 0,
-        }
-    );
+    // const modify = useMutation(
+    //     ["boardQuary"], // 키값, boardId가 바뀌면 다시 랜더링
+    //     async () => { // 요청 - 함수
+    //         return instance.put(`/board/modify/${boardId}`, board); // boardId = params에서 가져옴
+    //     },
+    //     {
+    //         refetchOnWindowFocus: false,
+    //         retry: 0,
+    //     }
+    // );
 
     const quillRef = useRef(null);
     const [isUploading, setUploading] = useState(false);
@@ -133,7 +133,8 @@ function BoardModifyPage() {
         try {
             const response = await instance.put(`/board/modify/${boardId}`, board) // await이 있어야 resolve데이터가 response에 담김
             alert("작성이 완료되었습니다.")
-            navigate(`/board/detail/${response.data.boardId}`) // 컨트롤러에서 응답받은 키값   
+            navigate(`/board/detail/${response?.data?.boardId}`) // 컨트롤러에서 응답받은 키값  
+            boardQuery.refetch(); 
         } catch (error) { // await에서 뜬 error 받아옴
             const fieldErrors = error.response.data;
 
@@ -183,7 +184,7 @@ function BoardModifyPage() {
     const handletitleInputOnchange = (e) => {
         setBoard(board => ({
             ...board,
-            [e.target.name]: e.target.value
+            title: e.target.value
         }));
     }
 
@@ -247,7 +248,7 @@ function BoardModifyPage() {
                 <h1>Quill Edit</h1>
                 <button onClick={handleWriteSubmitOnClick}>작성하기</button>
             </header>
-            <input css={titleInput} type="text" name="title" onChange={handletitleInputOnchange} defaultValue={boardQuery?.data?.data?.title} />
+            <input css={titleInput} type="text" onChange={handletitleInputOnchange} value={board.title} />
             <div css={editerLayout}>
                 {
                     isUploading &&
@@ -263,7 +264,7 @@ function BoardModifyPage() {
                         height: "100%"
                     }}
                     onChange={handleQuillValueOnChange}
-                    defaultValue={boardQuery?.data?.data?.content}
+                    value={board.content}
                     modules={{
                         toolbar: {
                             container: toolbarOptions,
